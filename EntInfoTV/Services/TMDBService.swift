@@ -66,6 +66,7 @@ final class TMDBService {
 
     static let imageBase = "https://image.tmdb.org/t/p/w342"
     static let imageBaseLarge = "https://image.tmdb.org/t/p/w780"
+    static let providerLogoBase = "https://image.tmdb.org/t/p/w92"
 
     private let baseURL = URL(string: "https://api.themoviedb.org/3")!
     private let session: URLSession
@@ -82,11 +83,55 @@ final class TMDBService {
         return response.results
     }
 
+    func fetchPopularMovies(region: String? = nil) async throws -> [Movie] {
+        var params = [
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "page", value: "1"),
+        ]
+        if let region, !region.isEmpty {
+            params.append(URLQueryItem(name: "region", value: region))
+        }
+        let response: ApiResponse<Movie> = try await request("/movie/popular", queryItems: params)
+        return response.results
+    }
+
+    func fetchNowPlayingMovies(region: String? = nil) async throws -> [Movie] {
+        var params = [
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "page", value: "1"),
+        ]
+        if let region, !region.isEmpty {
+            params.append(URLQueryItem(name: "region", value: region))
+        }
+        let response: ApiResponse<Movie> = try await request("/movie/now_playing", queryItems: params)
+        return response.results
+    }
+
     func fetchTopRatedMovies() async throws -> [Movie] {
         let response: ApiResponse<Movie> = try await request("/movie/top_rated", queryItems: [
             URLQueryItem(name: "language", value: "en-US"),
             URLQueryItem(name: "page", value: "1"),
         ])
+        return response.results
+    }
+
+    func fetchPopularTV() async throws -> [TVShow] {
+        let response: ApiResponse<TVShow> = try await request("/tv/popular", queryItems: [
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "page", value: "1"),
+        ])
+        return response.results
+    }
+
+    func fetchAiringTodayTV(region: String? = nil) async throws -> [TVShow] {
+        var params = [
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "page", value: "1"),
+        ]
+        if let region, !region.isEmpty {
+            params.append(URLQueryItem(name: "region", value: region))
+        }
+        let response: ApiResponse<TVShow> = try await request("/tv/airing_today", queryItems: params)
         return response.results
     }
 
@@ -98,10 +143,44 @@ final class TMDBService {
         return response.results
     }
 
+    func searchMulti(query: String) async throws -> [TrendingItem] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+        let response: ApiResponse<TrendingItem> = try await request("/search/multi", queryItems: [
+            URLQueryItem(name: "query", value: trimmed),
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "page", value: "1"),
+        ])
+        return response.results
+    }
+
+    func fetchWatchProviders(for media: MediaItem, region: String) async throws -> WatchProviderRegion? {
+        let path: String
+        switch media.mediaType {
+        case .movie:
+            path = "/movie/\(media.id)/watch/providers"
+        case .tv:
+            path = "/tv/\(media.id)/watch/providers"
+        case .person:
+            return nil
+        }
+
+        let response: WatchProviderResponse = try await request(path)
+        if let regionInfo = response.results?[region] {
+            return regionInfo
+        }
+        return response.results?.first?.value
+    }
+
     func imageURL(path: String?, large: Bool = false) -> URL? {
         guard let path, !path.isEmpty else { return nil }
         let base = large ? Self.imageBaseLarge : Self.imageBase
         return URL(string: base + path)
+    }
+
+    func providerLogoURL(path: String?) -> URL? {
+        guard let path, !path.isEmpty else { return nil }
+        return URL(string: Self.providerLogoBase + path)
     }
 
     private func request<T: Decodable>(_ path: String, queryItems: [URLQueryItem] = []) async throws -> T {

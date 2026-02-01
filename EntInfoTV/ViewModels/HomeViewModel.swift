@@ -38,7 +38,9 @@ final class HomeViewModel: ObservableObject {
             async let movies = service.fetchTopRatedMovies()
             async let tv = service.fetchTopRatedTV()
 
-            let trendingItems = try await trending.map { $0.asMediaItem }
+            let trendingItems = try await trending
+                .filter { $0.mediaType != .person }
+                .map { $0.asMediaItem }
             let movieItems = try await movies.map { $0.asMediaItem }
             let tvItems = try await tv.map { $0.asMediaItem }
 

@@ -9,7 +9,7 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .topLeading) {
+            ZStack {
                 AppTheme.background
                     .ignoresSafeArea()
 
@@ -36,57 +36,10 @@ struct HomeView: View {
                     .scrollIndicators(.hidden)
                 }
 
-                AppTitleView()
-                    .padding(.leading, horizontalPadding)
-                    .padding(.top, 24)
             }
-            .navigationBarHidden(true)
             .task { await viewModel.loadIfNeeded() }
         }
         .preferredColorScheme(.dark)
-    }
-}
-
-private struct AppTitleView: View {
-    var body: some View {
-        Text("EntInfo")
-            .font(.system(size: 34, weight: .heavy))
-            .foregroundColor(AppTheme.primary)
-            .shadow(color: .black.opacity(0.6), radius: 6, x: 0, y: 2)
-    }
-}
-
-private struct LoadingStateView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .progressViewStyle(.circular)
-            Text("Loading content...")
-                .foregroundColor(AppTheme.textSecondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-private struct ErrorStateView: View {
-    let message: String
-    let retry: () -> Void
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Unable to load content")
-                .font(.system(size: 28, weight: .semibold))
-                .foregroundColor(AppTheme.text)
-            Text(message)
-                .font(.system(size: 16))
-                .foregroundColor(AppTheme.textSecondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 640)
-            Button("Try Again", action: retry)
-                .buttonStyle(.borderedProminent)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(40)
     }
 }
 
@@ -114,9 +67,10 @@ private struct HeroCarousel: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(height: heroHeight)
             .clipped()
+            .focusSection()
 
             HStack(spacing: 6) {
-                ForEach(items.indices, id: \ .self) { index in
+                ForEach(items.indices, id: \.self) { index in
                     Capsule()
                         .fill(index == selection ? Color.white : Color.white.opacity(0.35))
                         .frame(width: index == selection ? 18 : 6, height: 6)
@@ -209,111 +163,6 @@ private struct HeroImage: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppTheme.surfaceSecondary)
-        .clipped()
-    }
-}
-
-private struct PlaceholderView: View {
-    let iconSize: CGFloat
-
-    var body: some View {
-        ZStack {
-            AppTheme.surfaceSecondary
-            Image(systemName: "film")
-                .font(.system(size: iconSize))
-                .foregroundColor(AppTheme.textTertiary)
-        }
-    }
-}
-
-private struct PosterRow: View {
-    let title: String
-    let items: [MediaItem]
-    let horizontalPadding: CGFloat
-
-    var body: some View {
-        if !items.isEmpty {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Text(title)
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundColor(AppTheme.text)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(AppTheme.textSecondary)
-                }
-                .padding(.horizontal, horizontalPadding)
-
-                ScrollView(.horizontal) {
-                    LazyHStack(spacing: 20) {
-                        ForEach(items) { item in
-                            PosterCard(media: item)
-                        }
-                    }
-                    .padding(.horizontal, horizontalPadding)
-                }
-                .scrollIndicators(.hidden)
-            }
-        }
-    }
-}
-
-private struct PosterCard: View {
-    let media: MediaItem
-    @State private var isFocused = false
-
-    private let cardWidth: CGFloat = 180
-    private let cardHeight: CGFloat = 270
-
-    var body: some View {
-        NavigationLink {
-            MediaDetailView(media: media)
-        } label: {
-            ZStack {
-                PosterImage(url: TMDBService.shared.imageURL(path: media.posterPath))
-            }
-            .frame(width: cardWidth, height: cardHeight)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isFocused ? AppTheme.primary : Color.clear, lineWidth: 3)
-            )
-            .scaleEffect(isFocused ? 1.08 : 1.0)
-            .shadow(color: .black.opacity(isFocused ? 0.6 : 0.3), radius: isFocused ? 16 : 8, x: 0, y: 6)
-            .animation(.easeOut(duration: 0.2), value: isFocused)
-        }
-        .buttonStyle(.plain)
-        .focusable(true) { focused in
-            isFocused = focused
-        }
-    }
-}
-
-private struct PosterImage: View {
-    let url: URL?
-
-    var body: some View {
-        Group {
-            if let url {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        PlaceholderView(iconSize: 32)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .failure:
-                        PlaceholderView(iconSize: 32)
-                    @unknown default:
-                        PlaceholderView(iconSize: 32)
-                    }
-                }
-            } else {
-                PlaceholderView(iconSize: 32)
-            }
-        }
         .background(AppTheme.surfaceSecondary)
         .clipped()
     }
