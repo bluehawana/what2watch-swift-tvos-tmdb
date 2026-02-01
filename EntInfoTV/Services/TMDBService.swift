@@ -67,6 +67,7 @@ final class TMDBService {
     static let imageBase = "https://image.tmdb.org/t/p/w342"
     static let imageBaseLarge = "https://image.tmdb.org/t/p/w780"
     static let providerLogoBase = "https://image.tmdb.org/t/p/w92"
+    static let profileBase = "https://image.tmdb.org/t/p/w185"
 
     private let baseURL = URL(string: "https://api.themoviedb.org/3")!
     private let session: URLSession
@@ -143,6 +144,50 @@ final class TMDBService {
         return response.results
     }
 
+    func fetchMovieDetail(id: Int) async throws -> MovieDetail {
+        try await request("/movie/\(id)", queryItems: [
+            URLQueryItem(name: "language", value: "en-US"),
+        ])
+    }
+
+    func fetchTVDetail(id: Int) async throws -> TVDetail {
+        try await request("/tv/\(id)", queryItems: [
+            URLQueryItem(name: "language", value: "en-US"),
+        ])
+    }
+
+    func fetchCredits(for media: MediaItem) async throws -> CreditsResponse? {
+        let path: String
+        switch media.mediaType {
+        case .movie:
+            path = "/movie/\(media.id)/credits"
+        case .tv:
+            path = "/tv/\(media.id)/credits"
+        case .person:
+            return nil
+        }
+        return try await request(path, queryItems: [
+            URLQueryItem(name: "language", value: "en-US"),
+        ])
+    }
+
+    func fetchReviews(for media: MediaItem) async throws -> [Review] {
+        let path: String
+        switch media.mediaType {
+        case .movie:
+            path = "/movie/\(media.id)/reviews"
+        case .tv:
+            path = "/tv/\(media.id)/reviews"
+        case .person:
+            return []
+        }
+        let response: ReviewsResponse = try await request(path, queryItems: [
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "page", value: "1"),
+        ])
+        return response.results
+    }
+
     func searchMulti(query: String) async throws -> [TrendingItem] {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
@@ -181,6 +226,11 @@ final class TMDBService {
     func providerLogoURL(path: String?) -> URL? {
         guard let path, !path.isEmpty else { return nil }
         return URL(string: Self.providerLogoBase + path)
+    }
+
+    func profileImageURL(path: String?) -> URL? {
+        guard let path, !path.isEmpty else { return nil }
+        return URL(string: Self.profileBase + path)
     }
 
     private func request<T: Decodable>(_ path: String, queryItems: [URLQueryItem] = []) async throws -> T {

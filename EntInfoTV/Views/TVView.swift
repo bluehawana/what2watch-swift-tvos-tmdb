@@ -37,6 +37,7 @@ struct TVView: View {
             }
             .task { await viewModel.loadIfNeeded() }
         }
+        .brandToolbar()
         .preferredColorScheme(.dark)
     }
 }

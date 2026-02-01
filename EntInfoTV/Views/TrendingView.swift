@@ -40,6 +40,7 @@ struct TrendingView: View {
             }
             .task { await viewModel.loadIfNeeded() }
         }
+        .brandToolbar()
         .preferredColorScheme(.dark)
     }
 }

@@ -31,7 +31,6 @@ struct RootTabView: View {
         .tint(AppTheme.primary)
     }
 }
-
 #Preview {
     RootTabView()
 }

@@ -47,6 +47,7 @@ struct SearchView: View {
                 .scrollIndicators(.hidden)
             }
         }
+        .brandToolbar()
         .preferredColorScheme(.dark)
     }
 

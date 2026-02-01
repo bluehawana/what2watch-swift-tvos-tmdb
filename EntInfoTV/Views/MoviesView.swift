@@ -37,6 +37,7 @@ struct MoviesView: View {
             }
             .task { await viewModel.loadIfNeeded() }
         }
+        .brandToolbar()
         .preferredColorScheme(.dark)
     }
 }

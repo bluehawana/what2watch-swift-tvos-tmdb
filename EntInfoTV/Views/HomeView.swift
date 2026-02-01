@@ -39,6 +39,7 @@ struct HomeView: View {
             }
             .task { await viewModel.loadIfNeeded() }
         }
+        .brandToolbar()
         .preferredColorScheme(.dark)
     }
 }

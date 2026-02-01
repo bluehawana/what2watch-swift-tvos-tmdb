@@ -28,6 +28,77 @@ struct TVShow: Decodable {
     let voteAverage: Double
 }
 
+struct Genre: Decodable, Hashable, Identifiable {
+    let id: Int
+    let name: String
+}
+
+struct Creator: Decodable, Hashable, Identifiable {
+    let id: Int
+    let name: String
+    let profilePath: String?
+}
+
+struct MovieDetail: Decodable {
+    let id: Int
+    let title: String
+    let overview: String
+    let tagline: String?
+    let releaseDate: String?
+    let voteAverage: Double
+    let genres: [Genre]
+}
+
+struct TVDetail: Decodable {
+    let id: Int
+    let name: String
+    let overview: String
+    let tagline: String?
+    let firstAirDate: String?
+    let voteAverage: Double
+    let genres: [Genre]
+    let createdBy: [Creator]
+}
+
+struct CreditsResponse: Decodable {
+    let id: Int
+    let cast: [CastMember]
+    let crew: [CrewMember]
+}
+
+struct CastMember: Decodable, Hashable, Identifiable {
+    let id: Int
+    let name: String
+    let character: String?
+    let profilePath: String?
+}
+
+struct CrewMember: Decodable, Hashable, Identifiable {
+    let id: Int
+    let name: String
+    let job: String?
+    let profilePath: String?
+}
+
+struct ReviewsResponse: Decodable {
+    let id: Int
+    let results: [Review]
+}
+
+struct Review: Decodable, Hashable, Identifiable {
+    let id: String
+    let author: String
+    let content: String
+    let authorDetails: AuthorDetails?
+}
+
+struct AuthorDetails: Decodable, Hashable {
+    let rating: Double?
+    let avatarPath: String?
+    let name: String?
+    let username: String?
+}
+
 struct TrendingItem: Decodable {
     let id: Int
     let title: String?
