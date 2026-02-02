@@ -29,6 +29,12 @@ struct RootTabView: View {
                 }
         }
         .tint(AppTheme.primary)
+        .overlay(alignment: .topLeading) {
+            BrandWordmark()
+                .padding(.leading, 56)
+                .padding(.top, 12)
+                .allowsHitTesting(false)
+        }
     }
 }
 #Preview {

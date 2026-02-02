@@ -154,42 +154,18 @@ struct BrandWordmark: View {
     var body: some View {
         HStack(spacing: 8) {
             ZStack {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(AppTheme.primary)
                 Text("EI")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundColor(.black)
             }
-            .frame(width: 26, height: 22)
+            .frame(width: 24, height: 20)
 
             Text("EntInfo")
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(AppTheme.text)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(AppTheme.surfaceSecondary.opacity(0.85))
-        .clipShape(Capsule())
-        .overlay(
-            Capsule()
-                .stroke(AppTheme.border, lineWidth: 1)
-        )
         .accessibilityLabel("EntInfo")
-    }
-}
-
-private struct BrandToolbarModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content.toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                BrandWordmark()
-            }
-        }
-    }
-}
-
-extension View {
-    func brandToolbar() -> some View {
-        modifier(BrandToolbarModifier())
     }
 }
